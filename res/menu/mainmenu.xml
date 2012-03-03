@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/start"          
+          android:title="@string/start_logging" />       
+    <item android:id="@+id/stop"          
+          android:title="@string/stop_logging" />
+    <item android:id="@+id/load"
+          android:title="@string/load" >
+        <!-- "file" submenu -->
+        <menu>            
+        </menu>       
+    </item>
+              
+
+</menu>
