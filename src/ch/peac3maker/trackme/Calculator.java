@@ -1,10 +1,7 @@
-package ch.peacemaker.geodata;
+package ch.peac3maker.trackme;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import android.text.format.DateUtils;
 
 import com.google.android.maps.GeoPoint;
 

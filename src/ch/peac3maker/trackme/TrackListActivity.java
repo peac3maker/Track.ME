@@ -1,8 +1,6 @@
-package ch.peacemaker.geodata;
+package ch.peac3maker.trackme;
 
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import android.app.ListActivity;
 import android.content.Intent;

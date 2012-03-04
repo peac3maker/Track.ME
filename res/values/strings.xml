@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="hello">Hello World, GeoDataTestActivity!</string>
-    <string name="app_name">GeoDataTest</string>
+    <string name="app_name">Track.ME</string>
     <string name="start_logging">Start</string>
     <string name="stop_logging">Stop</string>
     <string name="load">Load Saved Track</string>

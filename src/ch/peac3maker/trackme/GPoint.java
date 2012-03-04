@@ -1,4 +1,4 @@
-package ch.peacemaker.geodata;
+package ch.peac3maker.trackme;
 
 public class GPoint {	
 		private long id;

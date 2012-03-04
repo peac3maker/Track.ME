@@ -1,16 +1,15 @@
-package ch.peacemaker.geodata;
+package ch.peac3maker.trackme;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.android.maps.GeoPoint;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.text.format.DateUtils;
+
+import com.google.android.maps.GeoPoint;
 
 public class GPointDataSource {
 

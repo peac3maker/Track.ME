@@ -1,4 +1,4 @@
-package ch.peacemaker.geodata;
+package ch.peac3maker.trackme;
 
 	import android.content.Context;
 	import android.database.sqlite.SQLiteDatabase;
