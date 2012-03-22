@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,6 +17,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,6 +39,7 @@ public class GeoDataTestActivity extends MapActivity {
 	private Location lastLoc = null;
 	private int totalLength;
 	private Date start = null;
+	private TrackingService s;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -230,6 +234,22 @@ public class GeoDataTestActivity extends MapActivity {
     	ArrayAdapter<Track> adapter = new ArrayAdapter<Track>(this,
 				android.R.layout.simple_list_item_1, track);		
     	datasource.close();	
+	}
+	
+	private ServiceConnection mConnection = new ServiceConnection() {
+
+		public void onServiceConnected(ComponentName className, IBinder binder) {
+			s = ((TrackingService.LocalBinder) binder).getService();			
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			s = null;
+		}
+	};
+	
+	void doBindService() {
+		bindService(new Intent(this, TrackingService.class), mConnection,
+				Context.BIND_AUTO_CREATE);
 	}
 
 }

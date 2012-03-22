@@ -49,21 +49,29 @@ public class GPointDataSource {
 			return cursorToGPoint(cursor);
 		}
 		
-		public void createTrack(List<GeoPoint> points, java.util.Date startDate,int totaldistance) {	
+		public void createTrack(List<GeoPoint> points, java.util.Date startDate,int totaldistance) {				
+			long trackId = createTrack(startDate, totaldistance);
+			for(GeoPoint point: points){
+				createGeoPoint(trackId, point);
+			}			
+		}
+		
+		public long createGeoPoint(long trackid, GeoPoint point){
+			ContentValues values = new ContentValues();
+			values.put(MySQLiteHelper.GPOINT_lATITUTE, point.getLatitudeE6());
+			values.put(MySQLiteHelper.GPOINT_LONGITUDE, point.getLongitudeE6());			
+			values.put(MySQLiteHelper.GPOINT_TRACK, trackid);
+			return database.insert(MySQLiteHelper.TABLE_GPOINTS, null,
+					values);	
+		}
+		
+		public long createTrack( java.util.Date startDate,int totaldistance){
 			ContentValues trackvalues = new ContentValues();			
 			trackvalues.put(MySQLiteHelper.TRACK_DATE, new java.util.Date().getTime());
 			trackvalues.put(MySQLiteHelper.TRACK_START_DATE, startDate.getTime());
 			trackvalues.put(MySQLiteHelper.TRACK_TOTAL_DISTANCE, totaldistance);
-			long trackId = database.insert(MySQLiteHelper.TABLE_TRACK, MySQLiteHelper.TRACK_ID,
+			return database.insert(MySQLiteHelper.TABLE_TRACK, MySQLiteHelper.TRACK_ID,
 					trackvalues);
-			for(GeoPoint point: points){
-			ContentValues values = new ContentValues();
-			values.put(MySQLiteHelper.GPOINT_lATITUTE, point.getLatitudeE6());
-			values.put(MySQLiteHelper.GPOINT_LONGITUDE, point.getLongitudeE6());			
-			values.put(MySQLiteHelper.GPOINT_TRACK, trackId);
-			long insertId = database.insert(MySQLiteHelper.TABLE_GPOINTS, null,
-					values);			
-			}			
 		}
 
 		public void deletePoint(GPoint point) {
