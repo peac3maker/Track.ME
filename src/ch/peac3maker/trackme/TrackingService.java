@@ -32,91 +32,105 @@ public class TrackingService extends Service {
 
 	public class LocalBinder extends Binder {
 		TrackingService getService() {
-            return TrackingService.this;
-        }
-    }
-
-	@Override
-    public void onCreate() {		
-		
-    }
-	
-	@Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("LocalService", "Received start id " + startId + ": " + intent);
-        // We want this service to continue running until it is explicitly
-        // stopped, so return sticky.
-        start = new Date();
-        datasource = new GPointDataSource(this);
-    	datasource.open();
-    	trackid = datasource.createTrack(start,totalLength);
-    	datasource.close();    
-        return START_STICKY;
-    }
-	
-	private void stopLogging(){
-    	lm.removeUpdates(locationListener); 
-    	locationListener = null;    	    
-    }
-	
-	private void startLogging(){
-    	lm = (LocationManager)
-    	    	getSystemService(Context.LOCATION_SERVICE);
-    	    	locationListener = new MyLocationListener();
-    	    	lm.requestLocationUpdates(
-    	    	LocationManager.GPS_PROVIDER,
-    	    	0,
-    	    	0,
-    	    	locationListener); 
-    	    	
-    }
-	
-	@Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-	
-	// This is the object that receives interactions from clients.  See
-    // RemoteService for a more complete example.
-    private final IBinder mBinder = new LocalBinder();
-    
-    private class MyLocationListener implements LocationListener
-	{ 
-    	
-    	public MyLocationListener(){
-    		Handler mHandler = new Handler();
-    	}
-	@Override
-	public void onLocationChanged(Location loc) {
-	if (loc != null) {
-		float distance = 0;
-		if(lastLoc!= null){
-			distance = lastLoc.distanceTo(loc);
-			totalLength += distance;
+			return TrackingService.this;
 		}
-		lastLoc = loc;
-
-	GeoPoint p = new GeoPoint(
-	(int) (loc.getLatitude() * 1E6),
-	(int) (loc.getLongitude() * 1E6));	 
- 	datasource.open();
- 	datasource.createGeoPoint(trackid, p);
- 	datasource.close(); 		
-	}
-	}
-	@Override
-	public void onProviderDisabled(String provider) {
-	// TODO Auto-generated method stub
-	}
-	@Override
-	public void onProviderEnabled(String provider) {		
-	}
-	@Override
-	public void onStatusChanged(String provider, int status,
-	Bundle extras) {
-	// TODO Auto-generated method stub
 	}
 
+	@Override
+	public void onCreate() {
+
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.i("LocalService", "Received start id " + startId + ": " + intent);
+		// We want this service to continue running until it is explicitly
+		// stopped, so return sticky.
+		start = new Date();
+		datasource = new GPointDataSource(this);
+		datasource.open();
+		trackid = datasource.createTrack(start, totalLength);
+		datasource.close();
+		startLogging();
+		return START_STICKY;		
+	}
+
+	private void stopLogging() {
+		lm.removeUpdates(locationListener);
+		locationListener = null;
+	}
+
+	private void startLogging() {
+		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		MyLocationListener listen = new MyLocationListener();
+		
+		listen.addMyEventListener(new DataReceivedEventListener() {
+			
+			@Override
+			public void onDataReceived(DataReceivedEvent evt) {
+				// TODO Auto-generated method stub
+				sendBroadcast(new Intent("Test"));
+			}
+		});
+		locationListener = listen;
+		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
+				locationListener);
+
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mBinder;
+	}
+
+	// This is the object that receives interactions from clients. See
+	// RemoteService for a more complete example.
+	private final IBinder mBinder = new LocalBinder();
+
+	private class MyLocationListener implements LocationListener {
+
+		public MyLocationListener() {
+			Handler mHandler = new Handler();
+		}
+		
+		protected DataReceivedEventListener listener;
+		
+		// This methods allows classes to register for MyEvents
+	    public void addMyEventListener(DataReceivedEventListener listener) {
+	        this.listener = listener;
+	    }
+
+		@Override
+		public void onLocationChanged(Location loc) {
+			if (loc != null) {
+				float distance = 0;
+				if (lastLoc != null) {
+					distance = lastLoc.distanceTo(loc);
+					totalLength += distance;
+				}
+				lastLoc = loc;				
+				GeoPoint p = new GeoPoint((int) (loc.getLatitude() * 1E6),
+						(int) (loc.getLongitude() * 1E6));
+				datasource.open();
+				datasource.createGeoPoint(trackid, p);
+				datasource.close();
+				this.listener.onDataReceived(new DataReceivedEvent(this));
+			}
+		}
+
+		@Override
+		public void onProviderDisabled(String provider) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void onProviderEnabled(String provider) {
+		}
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+			// TODO Auto-generated method stub
+		}
 
 	}
 

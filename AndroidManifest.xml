@@ -23,6 +23,7 @@ android:name="android.permission.INTERNET" />
             </intent-filter>            
         </activity>
         <activity android:name="ch.peac3maker.trackme.TrackListActivity" />
+        <service android:name="ch.peac3maker.trackme.TrackingService"> </service>
         <uses-library android:name="com.google.android.maps" />
     </application>
 

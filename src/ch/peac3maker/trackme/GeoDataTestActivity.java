@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -35,17 +37,37 @@ public class GeoDataTestActivity extends MapActivity {
 	private LocationListener locationListener;
 	private MapView mapView;
 	private MapController mc;
-	private List<GeoPoint> points = new ArrayList<GeoPoint>();
+	public List<GeoPoint> points = new ArrayList<GeoPoint>();
 	private Location lastLoc = null;
 	private int totalLength;
 	private Date start = null;
 	private TrackingService s;
+	private BroadcastReceiver dataUpdateReceiver;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
     	setContentView(R.layout.main);    	
     	//---use the LocationManager class to obtain GPS locations---
+    	
+    }
+    
+    @Override
+   protected void onResume() {
+    	super.onResume();
+    	if (dataUpdateReceiver == null) dataUpdateReceiver = new TrackBroadCastReceiver();    	
+    	IntentFilter intentFilter = new IntentFilter(TrackBroadCastReceiver.TRACK_ID_RECEIVER);    	
+    	registerReceiver(dataUpdateReceiver, intentFilter); 
+    	
+    };
+    
+    @Override
+    protected void onPause() {
+    	super.onPause();
+    	if (dataUpdateReceiver != null) unregisterReceiver(dataUpdateReceiver);
+    };
+    
+    protected void onGeoPointsReceived(){
     	
     }
     
@@ -57,31 +79,34 @@ public class GeoDataTestActivity extends MapActivity {
     }
     
     private void startLogging(){
-    	lm = (LocationManager)
-    	    	getSystemService(Context.LOCATION_SERVICE);
-    	    	locationListener = new MyLocationListener();
-    	    	lm.requestLocationUpdates(
-    	    	LocationManager.GPS_PROVIDER,
-    	    	0,
-    	    	0,
-    	    	locationListener);
-    	    	mapView = (MapView) findViewById(R.id.mapview1);
-    	    	points = new ArrayList<GeoPoint>();
-    	    	lastLoc = null;
-    	    	mc = mapView.getController();
+//    	doBindService();
+    	startService(new Intent(this, TrackingService.class));
+//    	lm = (LocationManager)
+//    	    	getSystemService(Context.LOCATION_SERVICE);
+//    	    	locationListener = new MyLocationListener();
+//    	    	lm.requestLocationUpdates(
+//    	    	LocationManager.GPS_PROVIDER,
+//    	    	0,
+//    	    	0,
+//    	    	locationListener);
+//    	    	mapView = (MapView) findViewById(R.id.mapview1);
+//    	    	points = new ArrayList<GeoPoint>();
+//    	    	lastLoc = null;
+//    	    	mc = mapView.getController();
     }
     
     private void stopLogging(){
-    	lm.removeUpdates(locationListener); 
-    	locationListener = null;
-    	double speed = Calculator.GetCurrentAvgSpeedKMH(points, start, new Date(),totalLength);
-    	Toast.makeText(getBaseContext(),
-    			"Total Distance Taken: "+ totalLength+" current avg speed:"+ speed,
-    			Toast.LENGTH_LONG).show();
-    	GPointDataSource datasource = new GPointDataSource(this);
-    	datasource.open();
-    	datasource.createTrack(points,start,totalLength);
-    	datasource.close();
+    	stopService(new Intent(this, TrackingService.class));
+//    	lm.removeUpdates(locationListener); 
+//    	locationListener = null;
+//    	double speed = Calculator.GetCurrentAvgSpeedKMH(points, start, new Date(),totalLength);
+//    	Toast.makeText(getBaseContext(),
+//    			"Total Distance Taken: "+ totalLength+" current avg speed:"+ speed,
+//    			Toast.LENGTH_LONG).show();
+//    	GPointDataSource datasource = new GPointDataSource(this);
+//    	datasource.open();
+//    	datasource.createTrack(points,start,totalLength);
+//    	datasource.close();
     }
     
 	@Override
@@ -90,50 +115,50 @@ public class GeoDataTestActivity extends MapActivity {
 		return false;
 	}
 	
-	private class MyLocationListener implements LocationListener
-	{
-	@Override
-	public void onLocationChanged(Location loc) {
-	if (loc != null) {
-		float distance = 0;
-		if(lastLoc!= null){
-			distance = lastLoc.distanceTo(loc);
-			totalLength += distance;
-		}
-		lastLoc = loc;
-	/*Toast.makeText(getBaseContext(),
-	"Location changed : Lat: " + loc.getLatitude() +
-	" Lng: " + loc.getLongitude()+ "Distance To Last: "+ distance,
-	Toast.LENGTH_SHORT).show();*/
-	GeoPoint p = new GeoPoint(
-	(int) (loc.getLatitude() * 1E6),
-	(int) (loc.getLongitude() * 1E6));
-	/*mc.animateTo(p);
-	mc.setZoom(16);*/
-	if(points.size() == 0){
-		mc.animateTo(p);
-	}
-	MapOverlay mapOvlay = new MapOverlay(p);
-    mapView.getOverlays().add(mapOvlay);    
-
-	
-	mapView.invalidate();
-	}
-	}
-	@Override
-	public void onProviderDisabled(String provider) {
-	// TODO Auto-generated method stub
-	}
-	@Override
-	public void onProviderEnabled(String provider) {
-	// TODO Auto-generated method stub
-	}
-	@Override
-	public void onStatusChanged(String provider, int status,
-	Bundle extras) {
-	// TODO Auto-generated method stub
-	}
-	}
+//	private class MyLocationListener implements LocationListener
+//	{
+//	@Override
+//	public void onLocationChanged(Location loc) {
+//	if (loc != null) {
+//		float distance = 0;
+//		if(lastLoc!= null){
+//			distance = lastLoc.distanceTo(loc);
+//			totalLength += distance;
+//		}
+//		lastLoc = loc;
+//	/*Toast.makeText(getBaseContext(),
+//	"Location changed : Lat: " + loc.getLatitude() +
+//	" Lng: " + loc.getLongitude()+ "Distance To Last: "+ distance,
+//	Toast.LENGTH_SHORT).show();*/
+//	GeoPoint p = new GeoPoint(
+//	(int) (loc.getLatitude() * 1E6),
+//	(int) (loc.getLongitude() * 1E6));
+//	/*mc.animateTo(p);
+//	mc.setZoom(16);*/
+//	if(points.size() == 0){
+//		mc.animateTo(p);
+//	}
+//	MapOverlay mapOvlay = new MapOverlay(p);
+//    mapView.getOverlays().add(mapOvlay);    
+//
+//	
+//	mapView.invalidate();
+//	}
+//	}
+//	@Override
+//	public void onProviderDisabled(String provider) {
+//	// TODO Auto-generated method stub
+//	}
+//	@Override
+//	public void onProviderEnabled(String provider) {
+//	// TODO Auto-generated method stub
+//	}
+//	@Override
+//	public void onStatusChanged(String provider, int status,
+//	Bundle extras) {
+//	// TODO Auto-generated method stub
+//	}
+//	}
 	
 	public class MapOverlay extends com.google.android.maps.Overlay {
 		
@@ -202,7 +227,8 @@ public class GeoDataTestActivity extends MapActivity {
 	            return true;
 	        case R.id.load:
 	        	Intent myIntent = new Intent(this, TrackListActivity.class);
-                startActivityForResult(myIntent, 0);
+	        	startActivity(myIntent);
+//                startActivityForResult(myIntent, 0);
                 return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
@@ -235,21 +261,24 @@ public class GeoDataTestActivity extends MapActivity {
 				android.R.layout.simple_list_item_1, track);		
     	datasource.close();	
 	}
-	
-	private ServiceConnection mConnection = new ServiceConnection() {
+		
 
-		public void onServiceConnected(ComponentName className, IBinder binder) {
-			s = ((TrackingService.LocalBinder) binder).getService();			
-		}
 
-		public void onServiceDisconnected(ComponentName className) {
-			s = null;
-		}
-	};
 	
-	void doBindService() {
-		bindService(new Intent(this, TrackingService.class), mConnection,
-				Context.BIND_AUTO_CREATE);
-	}
+//	private ServiceConnection mConnection = new ServiceConnection() {
+//
+//		public void onServiceConnected(ComponentName className, IBinder binder) {
+//			s = ((TrackingService.LocalBinder) binder).getService();			
+//		}
+//
+//		public void onServiceDisconnected(ComponentName className) {
+//			s = null;
+//		}
+//	};
+	
+//	void doBindService() {
+//		bindService(new Intent(this, TrackingService.class), mConnection,
+//				Context.BIND_AUTO_CREATE);
+//	}
 
 }
