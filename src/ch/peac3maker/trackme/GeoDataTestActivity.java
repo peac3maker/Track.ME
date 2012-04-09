@@ -37,6 +37,8 @@ public class GeoDataTestActivity extends MapActivity {
 	private MapController mc;
 	public List<GeoPoint> points = new ArrayList<GeoPoint>();
 	private TrackBroadCastReceiver dataUpdateReceiver;
+	private long lastPaint = -1;
+	private int paintDifference = 20000;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,8 +60,9 @@ public class GeoDataTestActivity extends MapActivity {
 		  		datasource.open();		  		
 		  		long trackid = datasource.getNewestTrackID();
 		  		datasource.close();
-		  		if(trackid != -1){
-		  			rePaintPointsOfTrack(trackid);
+		  		if(trackid != -1 && (lastPaint == -1 || new Date().getTime() - lastPaint > paintDifference)){
+		  			lastPaint = new Date().getTime();
+		  			rePaintPointsOfTrack(trackid);		  			
 		  		}
 			}
 		});    	    

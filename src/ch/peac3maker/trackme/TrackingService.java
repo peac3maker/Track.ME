@@ -64,6 +64,10 @@ public class TrackingService extends Service {
 	private void stopLogging() {
 		lm.removeUpdates(locationListener);
 		locationListener = null;
+		datasource = new GPointDataSource(getApplicationContext());
+		datasource.open();
+		datasource.UpdateTrack(trackid, totalLength);
+		datasource.close();
 	}
 
 	//starts a custom locationlistener that sends a broadcast as soon as it receives a new location.
@@ -112,7 +116,7 @@ public class TrackingService extends Service {
 					distance = lastLoc.distanceTo(loc);
 					totalLength += distance;
 				}
-				lastLoc = loc;				
+				lastLoc = loc;
 				GeoPoint p = new GeoPoint((int) (loc.getLatitude() * 1E6),
 						(int) (loc.getLongitude() * 1E6));
 				datasource.open();

@@ -146,4 +146,10 @@ public class GPointDataSource {
 			}
 			return -1;
 		}
+		
+		public int UpdateTrack(long id, int totalLength){
+			ContentValues val = new ContentValues();
+			val.put(MySQLiteHelper.TRACK_TOTAL_DISTANCE, totalLength);
+			return database.update(MySQLiteHelper.TABLE_TRACK, val, MySQLiteHelper.TRACK_ID+" = "+id, null);
+		}
 }
