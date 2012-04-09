@@ -29,10 +29,7 @@ public class TrackListActivity extends ListActivity {
 
     	  lv.setOnItemClickListener(new OnItemClickListener() {
     	    public void onItemClick(AdapterView<?> parent, View view,
-    	        int position, long id) {
-    	      // When clicked, show a toast with the TextView text
-    	      //Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
-    	          //Toast.LENGTH_SHORT).show();    	    	
+    	        int position, long id) {    	         	    	
     	    	Track t = (Track)parent.getItemAtPosition(position);
     	    	Intent intent = new Intent();
     	    	intent.putExtra("Selected_Track", t.id);

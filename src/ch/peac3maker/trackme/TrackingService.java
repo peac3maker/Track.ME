@@ -1,12 +1,8 @@
 package ch.peac3maker.trackme;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapView;
-
-import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,12 +11,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.Toast;
 
+//Service that is used to do the tracking
 public class TrackingService extends Service {
 	private LocationManager lm;
 	private LocationListener locationListener;
@@ -39,8 +33,10 @@ public class TrackingService extends Service {
 	@Override
 	public void onCreate() {
 
-	}
+	}	
 
+	//On Start a new Track is created and the startlogging method is called
+	//Service returns start_sticky so it will keep on running until stopped
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i("LocalService", "Received start id " + startId + ": " + intent);
@@ -54,12 +50,23 @@ public class TrackingService extends Service {
 		startLogging();
 		return START_STICKY;		
 	}
+	
+	//OnDestroy event, logging is stopped and service destroyed
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		stopLogging();
+		super.onDestroy();
+		
+	}
 
+	//removes the locationlistener
 	private void stopLogging() {
 		lm.removeUpdates(locationListener);
 		locationListener = null;
 	}
 
+	//starts a custom locationlistener that sends a broadcast as soon as it receives a new location.
 	private void startLogging() {
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		MyLocationListener listen = new MyLocationListener();
@@ -68,8 +75,8 @@ public class TrackingService extends Service {
 			
 			@Override
 			public void onDataReceived(DataReceivedEvent evt) {
-				// TODO Auto-generated method stub
-				sendBroadcast(new Intent("Test"));
+ 				Intent intent = new Intent(TrackBroadCastReceiver.TRACK_ID_RECEIVER);				
+				sendBroadcast(intent);
 			}
 		});
 		locationListener = listen;
@@ -87,15 +94,12 @@ public class TrackingService extends Service {
 	// RemoteService for a more complete example.
 	private final IBinder mBinder = new LocalBinder();
 
+	//custom locationlistener saves each geopoint receivedd to the database
 	private class MyLocationListener implements LocationListener {
-
-		public MyLocationListener() {
-			Handler mHandler = new Handler();
-		}
 		
 		protected DataReceivedEventListener listener;
 		
-		// This methods allows classes to register for MyEvents
+		// This methods allows classes to register for DataReceived Events
 	    public void addMyEventListener(DataReceivedEventListener listener) {
 	        this.listener = listener;
 	    }

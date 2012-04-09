@@ -1,5 +1,6 @@
 package ch.peac3maker.trackme;
 
+//DataContract Class for a GPoint
 public class GPoint {	
 		private long id;
 		private long trackid;

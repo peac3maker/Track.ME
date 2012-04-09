@@ -2,10 +2,10 @@ package ch.peac3maker.trackme;
 
 import java.util.Date;
 
+//Datacontract for Tracks
 public class Track {
 	Date datum;
-	long id;
-	Date dateStarted;
+	long id;	
 	int totalDistance;
 	
 	public Date getDatum() {
@@ -20,12 +20,6 @@ public class Track {
 	
 	public void setId(long id) {
 		this.id = id;
-	}
-	public Date getDateStarted() {
-		return dateStarted;
-	}
-	public void setDateStarted(Date dateStarted) {
-		this.dateStarted = dateStarted;
 	}
 	
 	@Override

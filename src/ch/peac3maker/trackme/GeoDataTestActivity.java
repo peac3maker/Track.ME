@@ -32,45 +32,51 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Projection;
 
-public class GeoDataTestActivity extends MapActivity {
-	private LocationManager lm;
-	private LocationListener locationListener;
+public class GeoDataTestActivity extends MapActivity {		
 	private MapView mapView;
 	private MapController mc;
 	public List<GeoPoint> points = new ArrayList<GeoPoint>();
-	private Location lastLoc = null;
-	private int totalLength;
-	private Date start = null;
-	private TrackingService s;
-	private BroadcastReceiver dataUpdateReceiver;
+	private TrackBroadCastReceiver dataUpdateReceiver;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
-    	setContentView(R.layout.main);    	
-    	//---use the LocationManager class to obtain GPS locations---
-    	
+    	setContentView(R.layout.main);    	    	
     }
     
+    //Register our broadcastreceiver and add our DataReceivedListener to it.
     @Override
    protected void onResume() {
     	super.onResume();
-    	if (dataUpdateReceiver == null) dataUpdateReceiver = new TrackBroadCastReceiver();    	
+    	if (dataUpdateReceiver == null) dataUpdateReceiver = new TrackBroadCastReceiver();
+    	dataUpdateReceiver.addDataReceivedListener(new DataReceivedEventListener() {
+			
+			@Override
+			public void onDataReceived(DataReceivedEvent evt) {
+				// TODO Auto-generated method stub
+				GPointDataSource datasource = new GPointDataSource(getApplicationContext());
+		  		datasource.open();		  		
+		  		long trackid = datasource.getNewestTrackID();
+		  		datasource.close();
+		  		if(trackid != -1){
+		  			rePaintPointsOfTrack(trackid);
+		  		}
+			}
+		});    	    
+    	
     	IntentFilter intentFilter = new IntentFilter(TrackBroadCastReceiver.TRACK_ID_RECEIVER);    	
     	registerReceiver(dataUpdateReceiver, intentFilter); 
     	
     };
     
+    //Unregister broadcastreceiver, so we won't repaint the maps activity if it is paused.
     @Override
     protected void onPause() {
     	super.onPause();
     	if (dataUpdateReceiver != null) unregisterReceiver(dataUpdateReceiver);
-    };
+    };        
     
-    protected void onGeoPointsReceived(){
-    	
-    }
-    
+    //Create options menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -78,35 +84,14 @@ public class GeoDataTestActivity extends MapActivity {
         return true;
     }
     
-    private void startLogging(){
-//    	doBindService();
-    	startService(new Intent(this, TrackingService.class));
-//    	lm = (LocationManager)
-//    	    	getSystemService(Context.LOCATION_SERVICE);
-//    	    	locationListener = new MyLocationListener();
-//    	    	lm.requestLocationUpdates(
-//    	    	LocationManager.GPS_PROVIDER,
-//    	    	0,
-//    	    	0,
-//    	    	locationListener);
-//    	    	mapView = (MapView) findViewById(R.id.mapview1);
-//    	    	points = new ArrayList<GeoPoint>();
-//    	    	lastLoc = null;
-//    	    	mc = mapView.getController();
+    //Start Logging by starting TrackingService.
+    private void startLogging(){    	
+    	startService(new Intent(getApplicationContext(), TrackingService.class));
     }
     
-    private void stopLogging(){
-    	stopService(new Intent(this, TrackingService.class));
-//    	lm.removeUpdates(locationListener); 
-//    	locationListener = null;
-//    	double speed = Calculator.GetCurrentAvgSpeedKMH(points, start, new Date(),totalLength);
-//    	Toast.makeText(getBaseContext(),
-//    			"Total Distance Taken: "+ totalLength+" current avg speed:"+ speed,
-//    			Toast.LENGTH_LONG).show();
-//    	GPointDataSource datasource = new GPointDataSource(this);
-//    	datasource.open();
-//    	datasource.createTrack(points,start,totalLength);
-//    	datasource.close();
+    //Stop logging by stopping the TrackingService
+    private void stopLogging(){    	
+    	stopService(new Intent(getApplicationContext(), TrackingService.class));
     }
     
 	@Override
@@ -115,56 +100,9 @@ public class GeoDataTestActivity extends MapActivity {
 		return false;
 	}
 	
-//	private class MyLocationListener implements LocationListener
-//	{
-//	@Override
-//	public void onLocationChanged(Location loc) {
-//	if (loc != null) {
-//		float distance = 0;
-//		if(lastLoc!= null){
-//			distance = lastLoc.distanceTo(loc);
-//			totalLength += distance;
-//		}
-//		lastLoc = loc;
-//	/*Toast.makeText(getBaseContext(),
-//	"Location changed : Lat: " + loc.getLatitude() +
-//	" Lng: " + loc.getLongitude()+ "Distance To Last: "+ distance,
-//	Toast.LENGTH_SHORT).show();*/
-//	GeoPoint p = new GeoPoint(
-//	(int) (loc.getLatitude() * 1E6),
-//	(int) (loc.getLongitude() * 1E6));
-//	/*mc.animateTo(p);
-//	mc.setZoom(16);*/
-//	if(points.size() == 0){
-//		mc.animateTo(p);
-//	}
-//	MapOverlay mapOvlay = new MapOverlay(p);
-//    mapView.getOverlays().add(mapOvlay);    
-//
-//	
-//	mapView.invalidate();
-//	}
-//	}
-//	@Override
-//	public void onProviderDisabled(String provider) {
-//	// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onProviderEnabled(String provider) {
-//	// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public void onStatusChanged(String provider, int status,
-//	Bundle extras) {
-//	// TODO Auto-generated method stub
-//	}
-//	}
-	
+	//Extended MapOverlay that paints all the GeoPoints when draw is called.
 	public class MapOverlay extends com.google.android.maps.Overlay {
-		
-	      //private GeoPoint mGpt1;
-	      //private GeoPoint mGpt2;
-
+			  
 	      protected MapOverlay(GeoPoint gp1) {
 	         points.add(gp1);
 	      }
@@ -184,16 +122,7 @@ public class GeoDataTestActivity extends MapActivity {
 	         paint.setStrokeWidth(2);
 	         
 	         Projection projection = mapView.getProjection();	         
-	         GeoPoint first = null;
-	         /*if(points.size() > 1){
-	         first =  points.get(points.size()-2);
-	         GeoPoint second = points.get(points.size()-1);
-	         Point pt1 = new Point();
-	         Point pt2 = new Point();
-    		 projection.toPixels(first, pt1);
-    		 projection.toPixels(second, pt2);
-    		 canvas.drawLine(pt1.x, pt1.y, pt2.x, pt2.y, paint);    		 
-	         }*/
+	         GeoPoint first = null;	         
 	         for(GeoPoint pt : points)
 	         {
 	        	 if(first != null){
@@ -211,74 +140,50 @@ public class GeoDataTestActivity extends MapActivity {
 	      }
 	   }
 	
+	//Handles optionsitem selected event
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
 	    switch (item.getItemId()) {
-	        case R.id.start:
-	        	if(locationListener == null){
-	            startLogging();
-	            start = new Date();
-	        	}
+	        case R.id.start:	        	
+	            startLogging();	            	        	
 	            return true;
-	        case R.id.stop:
-	        	if(locationListener != null)
+	        case R.id.stop:	        	
 	            stopLogging();
 	            return true;
 	        case R.id.load:
-	        	Intent myIntent = new Intent(this, TrackListActivity.class);
-	        	startActivity(myIntent);
-//                startActivityForResult(myIntent, 0);
+	        	Intent myIntent = new Intent(getApplicationContext(), TrackListActivity.class);	        	
+                startActivityForResult(myIntent, 0);
                 return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
 	
+	//Called when this activity gets a result from another activity
+	//In this case it will create an overlay for the selected track in the TrackListActivity
 	@Override 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {     
 	  super.onActivityResult(requestCode, resultCode, data); 
 	  long selected = data.getLongExtra("Selected_Track", -1);
 	  if(selected != -1){
-	  GPointDataSource datasource = new GPointDataSource(this);
-  		datasource.open();
-  		points = datasource.getAllGeoPointsTrackID(selected);
-  		datasource.close();
-  		MapOverlay mapOvlay = new MapOverlay();
-  		mapView = (MapView) findViewById(R.id.mapview1);
-  	    mapView.getOverlays().add(mapOvlay);
-  	    mc.animateTo(points.get(0));
+		  rePaintPointsOfTrack(selected);
 	  }
-	}	
-
+	}
 	
-	private void PreloadTracksAndCreateSubMenu(MenuItem item){
+	//Recreates the custom map overlay with the points of a trackid
+	private void rePaintPointsOfTrack(long id){
 		GPointDataSource datasource = new GPointDataSource(this);
-    	datasource.open();
-    	Menu menu = item.getSubMenu();
-    	List<Track> track = datasource.GetListOfTracks();
-    	ArrayAdapter<Track> adapter = new ArrayAdapter<Track>(this,
-				android.R.layout.simple_list_item_1, track);		
-    	datasource.close();	
+  		datasource.open();
+  		points = datasource.getAllGeoPointsTrackID(id);
+  		datasource.close();
+  		  		
+  		mapView = (MapView) findViewById(R.id.mapview1);
+  		mc = mapView.getController();
+  	    mc.animateTo(points.get(0));
+  	    mc.setZoom(16);
+  		MapOverlay mapOvlay = new MapOverlay();  		
+  	    mapView.getOverlays().add(mapOvlay);
 	}
 		
-
-
-	
-//	private ServiceConnection mConnection = new ServiceConnection() {
-//
-//		public void onServiceConnected(ComponentName className, IBinder binder) {
-//			s = ((TrackingService.LocalBinder) binder).getService();			
-//		}
-//
-//		public void onServiceDisconnected(ComponentName className) {
-//			s = null;
-//		}
-//	};
-	
-//	void doBindService() {
-//		bindService(new Intent(this, TrackingService.class), mConnection,
-//				Context.BIND_AUTO_CREATE);
-//	}
-
 }
