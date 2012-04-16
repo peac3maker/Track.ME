@@ -6,7 +6,11 @@ import java.util.Date;
 public class Track {
 	Date datum;
 	long id;	
-	int totalDistance;
+	double totalDistance;
+	double totalHeightDistance;
+	double avgSpeed;
+	double curSpeed;
+	
 	
 	public Date getDatum() {
 		return datum;
@@ -26,10 +30,28 @@ public class Track {
     public String toString() {
         return this.datum.toLocaleString();
     }
-	public int getTotalDistance() {
+	public double getTotalDistance() {
 		return totalDistance;
 	}
-	public void setTotalDistance(int totalDistance) {
+	public void setTotalDistance(double totalDistance) {
 		this.totalDistance = totalDistance;
+	}
+	public double getTotalHeightDistance() {
+		return totalHeightDistance;
+	}
+	public void setTotalHeightDistance(double totalHeightDistance) {
+		this.totalHeightDistance = totalHeightDistance;
+	}
+	public double getAvgSpeed() {
+		return avgSpeed;
+	}
+	public void setAvgSpeed(double avgSpeed) {
+		this.avgSpeed = avgSpeed;
+	}
+	public double getCurSpeed() {
+		return curSpeed;
+	}
+	public void setCurSpeed(double curSpeed) {
+		this.curSpeed = curSpeed;
 	}
 }

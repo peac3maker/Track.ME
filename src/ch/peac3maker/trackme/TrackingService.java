@@ -19,7 +19,8 @@ public class TrackingService extends Service {
 	private LocationManager lm;
 	private LocationListener locationListener;
 	private Location lastLoc = null;
-	private int totalLength;
+	private double totalLength;
+	private double totalLengthheight;	
 	private long trackid;
 	private Date start = null;
 	GPointDataSource datasource;
@@ -66,7 +67,8 @@ public class TrackingService extends Service {
 		locationListener = null;
 		datasource = new GPointDataSource(getApplicationContext());
 		datasource.open();
-		datasource.UpdateTrack(trackid, totalLength);
+		double avgspeed = Calculator.GetAvgSpeedKMH(totalLength, start, new Date());
+		datasource.UpdateTrackCurrentSpeed(trackid, totalLength, totalLengthheight,avgspeed,0.0);
 		datasource.close();
 	}
 
@@ -112,23 +114,37 @@ public class TrackingService extends Service {
 		public void onLocationChanged(Location loc) {
 			if (loc != null) {
 				float distance = 0;
-				if (lastLoc != null) {
-					distance = lastLoc.distanceTo(loc);
-					totalLength += distance;
+				double avgSpeed = 0.0;
+				double curSpeed = 0.0;						
+				GPoint p = new GPoint();
+				p.setLat(loc.getLatitude() * 1E6);
+				if(loc.hasAltitude()){
+					p.setAlt(loc.getAltitude());
 				}
-				lastLoc = loc;
-				GeoPoint p = new GeoPoint((int) (loc.getLatitude() * 1E6),
-						(int) (loc.getLongitude() * 1E6));
+				p.setLon(loc.getLongitude()*1E6);
+//				GeoPoint p = new GeoPoint((int) (loc.getLatitude() * 1E6),
+//						(int) (loc.getLongitude() * 1E6));
 				datasource.open();
 				datasource.createGeoPoint(trackid, p);
+				if(lastLoc != null){					
+						distance = lastLoc.distanceTo(loc);
+						totalLength += distance;
+						totalLengthheight += Calculator.getDifferenceInHeight(lastLoc.getAltitude(), loc.getAltitude());
+						curSpeed = Calculator.GetAvgSpeedKMH(distance, new Date(lastLoc.getTime()), new Date(loc.getTime()));
+						avgSpeed = Calculator.GetAvgSpeedKMH(totalLength, start, new Date());					
+					datasource.UpdateTrackCurrentSpeed(trackid, totalLength, totalLengthheight, avgSpeed, curSpeed);
+				}				
 				datasource.close();
+				lastLoc = loc;	
 				this.listener.onDataReceived(new DataReceivedEvent(this));
 			}
 		}
 
 		@Override
 		public void onProviderDisabled(String provider) {
-			// TODO Auto-generated method stub
+			// TODO Auto-generated method stub	
+//			Intent in = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);   
+//			startActivity(in);
 		}
 
 		@Override

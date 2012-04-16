@@ -20,13 +20,13 @@ public class TrackListActivity extends ListActivity {
     	GPointDataSource source = new GPointDataSource(this);
     	source.open();
     	List<Track> track = source.GetListOfTracks();
+    	source.close();
     	ArrayAdapter<Track> adapter = new ArrayAdapter<Track>(this,
 				android.R.layout.simple_list_item_1, track);      	
     	setListAdapter(adapter);
     	
     	 ListView lv = getListView();
     	  lv.setTextFilterEnabled(true);
-
     	  lv.setOnItemClickListener(new OnItemClickListener() {
     	    public void onItemClick(AdapterView<?> parent, View view,
     	        int position, long id) {    	         	    	
@@ -45,6 +45,7 @@ public class TrackListActivity extends ListActivity {
 		// TODO Auto-generated method stub
 		super.onBackPressed();
 		Intent intent = new Intent();
+		intent.putExtra("Selected_Track", -1);
 		setResult(RESULT_OK, intent);
 		finish();
 	}	

@@ -5,7 +5,8 @@ public class GPoint {
 		private long id;
 		private long trackid;
 		private double lon;
-		private double lat;			
+		private double lat;
+		private double alt;
 
 		public long getId() {
 			return id;
@@ -37,6 +38,14 @@ public class GPoint {
 
 		public void setTrackid(long trackid) {
 			this.trackid = trackid;
+		}
+
+		public double getAlt() {
+			return alt;
+		}
+
+		public void setAlt(double alt) {
+			this.alt = alt;
 		}
 
 		

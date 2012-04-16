@@ -40,6 +40,19 @@ public class Calculator {
 		return metersec;
 	}
 	
+	public static double GetAvgSpeedMPS(double totallength, Date start, Date end){			
+		long sec = end.getTime()/1000 - start.getTime()/1000;
+		double metersec = totallength / sec;
+		return metersec;
+	}
+	
+	public static double GetAvgSpeedKMH(double totallength, Date start, Date end){			
+		double mps = GetAvgSpeedMPS(totallength, start, end);
+		return mps*3.6;
+	}
+	
+	
+	
 	public static double getTotalDistancePassedM(List<GeoPoint> points){
 		double total = 0;
 		for(int index = 0; index<points.size(); index++){
@@ -48,5 +61,9 @@ public class Calculator {
 			}
 		}
 		return total;
+	}
+	
+	public static double getDifferenceInHeight(double lastHeight, double newHeight){
+		return lastHeight > newHeight ? (lastHeight - newHeight): (newHeight - lastHeight);
 	}
 }

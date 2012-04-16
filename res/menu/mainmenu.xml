@@ -5,11 +5,9 @@
     <item android:id="@+id/stop"          
           android:title="@string/stop_logging" />
     <item android:id="@+id/load"
-          android:title="@string/load" >
-        <!-- "file" submenu -->
-        <menu>            
-        </menu>       
+          android:title="@string/load" >             
     </item>
-              
-
+    <item android:id="@+id/stats"
+          android:title="@string/stats" >             
+    </item>
 </menu>

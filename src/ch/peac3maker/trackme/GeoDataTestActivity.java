@@ -35,9 +35,9 @@ import com.google.android.maps.Projection;
 public class GeoDataTestActivity extends MapActivity {		
 	private MapView mapView;
 	private MapController mc;
-	public List<GeoPoint> points = new ArrayList<GeoPoint>();
 	private TrackBroadCastReceiver dataUpdateReceiver;
 	private long lastPaint = -1;
+	private long trackid = -1;
 	private int paintDifference = 20000;
     /** Called when the activity is first created. */
     @Override
@@ -58,7 +58,7 @@ public class GeoDataTestActivity extends MapActivity {
 				// TODO Auto-generated method stub
 				GPointDataSource datasource = new GPointDataSource(getApplicationContext());
 		  		datasource.open();		  		
-		  		long trackid = datasource.getNewestTrackID();
+		  		trackid = datasource.getNewestTrackID();
 		  		datasource.close();
 		  		if(trackid != -1 && (lastPaint == -1 || new Date().getTime() - lastPaint > paintDifference)){
 		  			lastPaint = new Date().getTime();
@@ -100,23 +100,26 @@ public class GeoDataTestActivity extends MapActivity {
 	@Override
 	protected boolean isRouteDisplayed() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	
 	//Extended MapOverlay that paints all the GeoPoints when draw is called.
 	public class MapOverlay extends com.google.android.maps.Overlay {
-			  
-	      protected MapOverlay(GeoPoint gp1) {
-	         points.add(gp1);
-	      }
-	      
-	      protected MapOverlay(){
-	      
+		public List<GeoPoint> points = new ArrayList<GeoPoint>();  
+		
+	      protected MapOverlay(long id){
+	    	  GPointDataSource datasource = new GPointDataSource(getApplicationContext());
+		   		datasource.open();
+		   		points = datasource.getAllGeoPointsTrackID(id);
+		   		datasource.close();
 	      }
 	      @Override
 	      public boolean draw(Canvas canvas, MapView mapView, boolean shadow,
 	            long when) {
 	         super.draw(canvas, mapView, shadow);
+	         
+	        
+	   		
 	         Paint paint;
 	         paint = new Paint();
 	         paint.setColor(Color.RED);
@@ -158,6 +161,11 @@ public class GeoDataTestActivity extends MapActivity {
 	        	Intent myIntent = new Intent(getApplicationContext(), TrackListActivity.class);	        	
                 startActivityForResult(myIntent, 0);
                 return true;
+	        case R.id.stats:
+	        	Intent statsIntend = new Intent(getApplicationContext(), StatisticsActivity.class);	
+	        	statsIntend.putExtra("Selected_Track", trackid);
+                startActivityForResult(statsIntend, 0);
+                return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -167,26 +175,27 @@ public class GeoDataTestActivity extends MapActivity {
 	//In this case it will create an overlay for the selected track in the TrackListActivity
 	@Override 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {     
-	  super.onActivityResult(requestCode, resultCode, data); 
+	  super.onActivityResult(requestCode, resultCode, data); 	  
+	  if(data!= null && data.hasExtra("Selected_Track")){
 	  long selected = data.getLongExtra("Selected_Track", -1);
 	  if(selected != -1){
+		  trackid = selected;
 		  rePaintPointsOfTrack(selected);
+	  }
 	  }
 	}
 	
 	//Recreates the custom map overlay with the points of a trackid
-	private void rePaintPointsOfTrack(long id){
-		GPointDataSource datasource = new GPointDataSource(this);
-  		datasource.open();
-  		points = datasource.getAllGeoPointsTrackID(id);
-  		datasource.close();
+	private void rePaintPointsOfTrack(long id){		
   		  		
   		mapView = (MapView) findViewById(R.id.mapview1);
-  		mc = mapView.getController();
-  	    mc.animateTo(points.get(0));
+  		mc = mapView.getController();  	   
   	    mc.setZoom(16);
-  		MapOverlay mapOvlay = new MapOverlay();  		
+  		MapOverlay mapOvlay = new MapOverlay(id);  		
   	    mapView.getOverlays().add(mapOvlay);
+  	    if(mapOvlay.points.size() > 0){
+  	    mc.animateTo(mapOvlay.points.get(0));
+  	    }
 	}
 		
 }
