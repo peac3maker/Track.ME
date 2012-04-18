@@ -21,9 +21,11 @@ package ch.peac3maker.trackme;
 		public static final String TRACK_TOTAL_DISTANCE_HEIGHT = "distance_height";
 		public static final String TRACK_TOTAL_AVG_SPEED = "avg_speed";
 		public static final String TRACK_TOTAL_CUR_SPEED = "cur_speed";
+		public static final String TRACK_LOWEST_ALT = "high_alt";
+		public static final String TRACK_HIGHEST_ALT = "low_alt";
 
 		private static final String DATABASE_NAME = "GeoData.db";
-		private static final int DATABASE_VERSION = 11;
+		private static final int DATABASE_VERSION = 12;
 
 		private static final String DATABASE_CREATE_TRACK = "create table Track ( " + TRACK_ID
 				+ " integer primary key autoincrement, " +TRACK_DATE				
@@ -31,6 +33,8 @@ package ch.peac3maker.trackme;
 				+ " real, "+ TRACK_TOTAL_DISTANCE_HEIGHT
 				+ " real, "+ TRACK_TOTAL_AVG_SPEED
 				+ " real, "+ TRACK_TOTAL_CUR_SPEED
+				+ " real, "+ TRACK_LOWEST_ALT
+				+ " real, "+ TRACK_HIGHEST_ALT
 				+" real );";
 		// Database creation sql statement
 		private static final String DATABASE_CREATE = "create table "

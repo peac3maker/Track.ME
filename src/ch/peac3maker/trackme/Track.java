@@ -10,6 +10,8 @@ public class Track {
 	double totalHeightDistance;
 	double avgSpeed;
 	double curSpeed;
+	private double lowestAlt;
+	private double highestAlt;
 	
 	
 	public Date getDatum() {
@@ -53,5 +55,17 @@ public class Track {
 	}
 	public void setCurSpeed(double curSpeed) {
 		this.curSpeed = curSpeed;
+	}
+	public double getLowestAlt() {
+		return lowestAlt;
+	}
+	public void setLowestAlt(double lowestHeight) {
+		this.lowestAlt = lowestHeight;
+	}
+	public double getHighestAlt() {
+		return highestAlt;
+	}
+	public void setHighestAlt(double highestHeight) {
+		this.highestAlt = highestHeight;
 	}
 }

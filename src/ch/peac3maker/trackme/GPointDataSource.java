@@ -142,6 +142,12 @@ public class GPointDataSource {
 			if (!cursor.isNull(5)) {
 				track.setCurSpeed(cursor.getDouble(5));
 			}
+			if (!cursor.isNull(6)) {
+				track.setLowestAlt(cursor.getDouble(6));
+			}
+			if (!cursor.isNull(7)) {
+				track.setHighestAlt(cursor.getDouble(7));
+			}
 			return track;
 		}
 
@@ -188,7 +194,7 @@ public class GPointDataSource {
 	
 	public Track getTrackByID(long id){
 		Cursor cursor = database.query(MySQLiteHelper.TABLE_TRACK,
-				new String[] { MySQLiteHelper.TRACK_ID, MySQLiteHelper.TRACK_DATE, MySQLiteHelper.TRACK_TOTAL_DISTANCE, MySQLiteHelper.TRACK_TOTAL_DISTANCE_HEIGHT, MySQLiteHelper.TRACK_TOTAL_AVG_SPEED,MySQLiteHelper.TRACK_TOTAL_CUR_SPEED }, MySQLiteHelper.TRACK_ID+" = "+id, null, null,null,null);
+				new String[] { MySQLiteHelper.TRACK_ID, MySQLiteHelper.TRACK_DATE, MySQLiteHelper.TRACK_TOTAL_DISTANCE, MySQLiteHelper.TRACK_TOTAL_DISTANCE_HEIGHT, MySQLiteHelper.TRACK_TOTAL_AVG_SPEED,MySQLiteHelper.TRACK_TOTAL_CUR_SPEED, MySQLiteHelper.TRACK_LOWEST_ALT, MySQLiteHelper.TRACK_HIGHEST_ALT }, MySQLiteHelper.TRACK_ID+" = "+id, null, null,null,null);
 		cursor.moveToFirst();
 		if (!cursor.isAfterLast()) {
 			Track t = cursorToTrack(cursor);
@@ -216,5 +222,28 @@ public class GPointDataSource {
 		val.put(MySQLiteHelper.TRACK_TOTAL_CUR_SPEED, currentspeed);
 		return database.update(MySQLiteHelper.TABLE_TRACK, val,
 				MySQLiteHelper.TRACK_ID + " = " + id, null);
+	}
+	
+	public int UpdateTrackLowest(long id, double lowestAlt){
+		ContentValues val = new ContentValues();		
+		val.put(MySQLiteHelper.TRACK_LOWEST_ALT, lowestAlt);		
+		return database.update(MySQLiteHelper.TABLE_TRACK, val,
+				MySQLiteHelper.TRACK_ID + " = " + id, null);
+	}
+	
+	public int UpdateTrackHeighest(long id, double heighestAlt){
+		ContentValues val = new ContentValues();				
+		val.put(MySQLiteHelper.TRACK_HIGHEST_ALT, heighestAlt);
+		return database.update(MySQLiteHelper.TABLE_TRACK, val,
+				MySQLiteHelper.TRACK_ID + " = " + id, null);
+	}
+	
+	public int GetGPointCount(long id){
+		Cursor mCount= database.rawQuery("select count("+MySQLiteHelper.GPOINT_ID+") from "+MySQLiteHelper.TABLE_GPOINTS+ " where "+MySQLiteHelper.GPOINT_TRACK+" = "+ id, null);
+		mCount.moveToFirst();
+		int count= mCount.getInt(0);
+		mCount.close();
+		return count;
+
 	}
 }

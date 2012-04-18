@@ -20,7 +20,9 @@ public class TrackingService extends Service {
 	private LocationListener locationListener;
 	private Location lastLoc = null;
 	private double totalLength;
-	private double totalLengthheight;	
+	private double totalLengthheight;
+	private double lowestAlt;
+	private double highestAlt;
 	private long trackid;
 	private Date start = null;
 	GPointDataSource datasource;
@@ -133,7 +135,15 @@ public class TrackingService extends Service {
 						curSpeed = Calculator.GetAvgSpeedKMH(distance, new Date(lastLoc.getTime()), new Date(loc.getTime()));
 						avgSpeed = Calculator.GetAvgSpeedKMH(totalLength, start, new Date());					
 					datasource.UpdateTrackCurrentSpeed(trackid, totalLength, totalLengthheight, avgSpeed, curSpeed);
-				}				
+				}
+				if(loc.getAltitude() > highestAlt){
+					highestAlt = loc.getAltitude();
+					datasource.UpdateTrackHeighest(trackid, highestAlt);
+				}
+				else if(loc.getAltitude() < lowestAlt){
+					lowestAlt = loc.getAltitude();
+					datasource.UpdateTrackLowest(trackid, lowestAlt);
+				}
 				datasource.close();
 				lastLoc = loc;	
 				this.listener.onDataReceived(new DataReceivedEvent(this));
