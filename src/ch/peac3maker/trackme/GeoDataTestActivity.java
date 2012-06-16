@@ -24,7 +24,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Toast;
+
+import ch.peac3maker.trackme.R.menu;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -39,6 +42,7 @@ public class GeoDataTestActivity extends MapActivity {
 	private long lastPaint = -1;
 	private long trackid = -1;
 	private int paintDifference = 20000;
+	private boolean isServiceRunning = false;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,13 +92,17 @@ public class GeoDataTestActivity extends MapActivity {
     }
     
     //Start Logging by starting TrackingService.
-    private void startLogging(){    	
+    private void startLogging(){   
+    	isServiceRunning = true;
+    	
     	startService(new Intent(getApplicationContext(), TrackingService.class));
     }
     
     //Stop logging by stopping the TrackingService
     private void stopLogging(){    	
-    	stopService(new Intent(getApplicationContext(), TrackingService.class));
+    	isServiceRunning = false;
+    	lastPaint = -1;
+    	stopService(new Intent(getApplicationContext(), TrackingService.class));    	
     }
     
 	@Override
@@ -146,15 +154,29 @@ public class GeoDataTestActivity extends MapActivity {
 	      }
 	   }
 	
+	@Override
+	public boolean onPrepareOptionsMenu (Menu menu) {
+	    if (isServiceRunning)
+	        menu.getItem(2).setEnabled(false);
+	    else
+	    	menu.getItem(2).setEnabled(true);
+	    return true;
+	}
+
+	
 	//Handles optionsitem selected event
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
 	    switch (item.getItemId()) {
-	        case R.id.start:	        	
+	        case R.id.start:
+//	        	MenuItem load = (MenuItem) findViewById(R.id.load);
+//	        	load.setEnabled(false);
 	            startLogging();	            	        	
 	            return true;
-	        case R.id.stop:	        	
+	        case R.id.stop:
+//	        	MenuItem load2 = (MenuItem) findViewById(R.id.load);
+//	        	load2.setEnabled(true);
 	            stopLogging();
 	            return true;
 	        case R.id.load:
@@ -162,9 +184,11 @@ public class GeoDataTestActivity extends MapActivity {
                 startActivityForResult(myIntent, 0);
                 return true;
 	        case R.id.stats:
+	        	if(trackid != -1){
 	        	Intent statsIntend = new Intent(getApplicationContext(), StatisticsActivity.class);	
 	        	statsIntend.putExtra("Selected_Track", trackid);
                 startActivityForResult(statsIntend, 0);
+	        	}
                 return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
